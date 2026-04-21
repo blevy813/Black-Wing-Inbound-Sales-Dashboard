@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Black Wing Sales Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800;900&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060a12;--surface:#0d1421;--surface2:#141f30;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--text:#eef2ff;--text2:#7a8aaa;--text3:#3a4560;--green:#00e5a0;--green-glow:rgba(0,229,160,0.12);--green-border:rgba(0,229,160,0.28);--amber:#ffb340;--amber-dim:rgba(255,179,64,0.12);--red:#ff5f5f;--red-dim:rgba(255,95,95,0.1);--blue:#4da6ff;--purple:#9b7fff;--gold:#ffd060}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100vw;height:100vh;overflow:hidden}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;font-size:14px}
+
+/* TOP BAR */
+.topbar{height:68px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:var(--surface);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:36px;height:36px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#001a10;font-family:'Barlow Condensed',sans-serif}
+.brand-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;letter-spacing:0.04em}
+.brand-sub{font-size:10px;color:var(--text3);margin-top:-2px}
+.clock{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;letter-spacing:0.06em;text-align:center}
+.clock-date{font-size:11px;color:var(--text2);text-align:center;margin-top:-3px}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.live-pill{display:flex;align-items:center;gap:7px;padding:5px 14px;border-radius:30px;background:var(--green-glow);border:1px solid var(--green-border);font-size:11px;font-weight:700;color:var(--green);letter-spacing:0.06em;text-transform:uppercase}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:livePulse 1.8s ease-in-out infinite}
+@keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,229,160,0.5)}50%{opacity:0.6;box-shadow:0 0 0 5px rgba(0,229,160,0)}}
+.last-update{font-size:10px;color:var(--text3)}
+
+/* DATE FILTER BAR */
+.filterbar{height:50px;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 32px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.period-btn{font-size:12px;font-weight:600;padding:5px 16px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:'Barlow',sans-serif;transition:all 0.15s;letter-spacing:0.02em}
+.period-btn:hover{color:var(--text);border-color:rgba(255,255,255,0.2)}
+.period-btn.on{background:var(--green-glow);border-color:var(--green-border);color:var(--green)}
+.divider{width:1px;height:20px;background:var(--border2);margin:0 4px}
+.date-input-wrap{display:flex;align-items:center;gap:8px}
+.date-label{font-size:11px;color:var(--text3);white-space:nowrap}
+.date-input{background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--text);font-family:'Barlow',sans-serif;cursor:pointer;outline:none;transition:border-color 0.15s}
+.date-input:focus{border-color:var(--green-border)}
+.date-input::-webkit-calendar-picker-indicator{filter:invert(0.5);cursor:pointer}
+.period-label{font-size:11px;color:var(--text2);margin-left:4px}
+
+/* BODY */
+.body{flex:1;display:flex;overflow:hidden;min-height:0}
+
+/* LEFT PANEL */
+.left{width:390px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.metrics{display:grid;grid-template-columns:1fr 1fr;background:var(--border);gap:1px;flex-shrink:0}
+.metric{background:var(--surface);padding:16px 20px;position:relative;overflow:hidden}
+.metric::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.m1::after{background:linear-gradient(90deg,var(--green),transparent)}
+.m2::after{background:linear-gradient(90deg,var(--blue),transparent)}
+.m3::after{background:linear-gradient(90deg,var(--amber),transparent)}
+.m4::after{background:linear-gradient(90deg,var(--purple),transparent)}
+.metric-label{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.metric-val{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;letter-spacing:-0.01em;color:var(--text);line-height:1}
+.metric-sub{font-size:10px;color:var(--text2);margin-top:3px}
+
+/* LEADERBOARD */
+.lb{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.lb-head{padding:10px 20px 8px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.lb-period{font-size:10px;color:var(--green);font-weight:600}
+.lb-list{flex:1;overflow-y:auto;scrollbar-width:none}
+.lb-list::-webkit-scrollbar{display:none}
+.lb-row{display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--border);position:relative}
+.lb-row.r1{background:rgba(255,208,96,0.04)}
+.lb-row.r2{background:rgba(77,166,255,0.03)}
+.lb-row.r3{background:rgba(155,127,255,0.03)}
+.lb-rank{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;width:24px;text-align:center;flex-shrink:0}
+.r1 .lb-rank{color:var(--gold)}.r2 .lb-rank{color:#b0bcd4}.r3 .lb-rank{color:#c07a3a}
+.lb-rank.other{color:var(--text3);font-size:12px}
+.lb-av{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-meta{font-size:10px;color:var(--text2);margin-top:1px}
+.lb-amt{text-align:right;flex-shrink:0}
+.lb-premium{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;color:var(--text)}
+.r1 .lb-premium{color:var(--gold)}
+.lb-bar-bg{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,0.04)}
+.lb-bar{height:100%;transition:width 0.8s ease}
+.r1 .lb-bar{background:var(--gold)}.r2 .lb-bar{background:#b0bcd4}.r3 .lb-bar{background:#c07a3a}
+.lb-row:not(.r1):not(.r2):not(.r3) .lb-bar{background:var(--text3)}
+
+/* RIGHT PANEL */
+.right{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.feed-top{display:flex;align-items:center;justify-content:space-between;padding:10px 24px 8px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;gap:8px}
+.feed-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2)}
+.feed-period{font-size:11px;color:var(--green);font-weight:600}
+.status-filters{display:flex;gap:5px}
+.sf{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:'Barlow',sans-serif;transition:all 0.15s}
+.sf:hover{color:var(--text2)}
+.sf.on{background:var(--green-glow);border-color:var(--green-border);color:var(--green)}
+.col-heads{display:grid;grid-template-columns:155px 105px 130px 95px 95px 135px 105px 95px 105px;padding:7px 24px 5px;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);flex-shrink:0}
+.feed-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 24px;scrollbar-width:none}
+.feed-scroll::-webkit-scrollbar{display:none}
+
+/* POLICY ROW */
+.prow{display:grid;grid-template-columns:155px 105px 130px 95px 95px 135px 105px 95px 105px;padding:10px 0;border-bottom:1px solid var(--border);align-items:center}
+.prow:last-child{border-bottom:none}
+.prow.new{animation:rowIn 0.5s ease,rowFlash 1.5s ease}
+@keyframes rowIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes rowFlash{0%{background:rgba(0,229,160,0.1)}100%{background:transparent}}
+
+/* Date group header */
+.date-group{padding:8px 0 4px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);margin-bottom:2px;display:flex;align-items:center;justify-content:space-between}
+.date-group-count{font-size:10px;color:var(--green);font-weight:600}
+
+.c-agent{display:flex;align-items:center;gap:7px;min-width:0}
+.c-av{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.c-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-date{font-size:11px;color:var(--text2)}
+.c-policy{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-carrier{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:6px}
+.c-product{font-size:10px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-annual{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--green)}
+.c-monthly{font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--text2)}
+.c-source{font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600}
+.pill-dot{width:4px;height:4px;border-radius:50%;background:currentColor}
+.p-active{background:var(--green-glow);color:var(--green);border:1px solid var(--green-border)}
+.p-pending{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,179,64,0.25)}
+.p-lapsed{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,95,95,0.2)}
+.p-other{background:rgba(255,255,255,0.04);color:var(--text3);border:1px solid var(--border)}
+.empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:14px}
+
+/* TICKER */
+.ticker{height:32px;flex-shrink:0;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;overflow:hidden}
+.ticker-tag{flex-shrink:0;padding:0 12px;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);background:var(--green-glow);border-right:1px solid var(--green-border);height:100%;display:flex;align-items:center}
+.ticker-track{flex:1;overflow:hidden;height:100%;display:flex;align-items:center}
+.ticker-inner{display:flex;gap:36px;white-space:nowrap;animation:tick 35s linear infinite;font-size:11px;color:var(--text2)}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ti{display:inline-flex;align-items:center;gap:6px}
+
+/* TOAST */
+.toast{position:fixed;bottom:42px;right:24px;background:var(--surface2);border:1px solid var(--green-border);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;transform:translateY(80px);opacity:0;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);z-index:99;max-width:300px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-icon{width:34px;height:34px;border-radius:8px;background:var(--green-glow);border:1px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.toast-title{font-size:12px;font-weight:600;color:var(--green)}
+.toast-body{font-size:11px;color:var(--text2);margin-top:1px}
+
+/* Loading */
+.loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:200;transition:opacity 0.5s}
+.loading.hide{opacity:0;pointer-events:none}
+.spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--text2)}
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading sales data…</div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">BW</div>
+    <div>
+      <div class="brand-name">BLACK WING SALES</div>
+      <div class="brand-sub">Live Dashboard · Google Sheets</div>
+    </div>
+  </div>
+  <div>
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="clock-date" id="clockDate">—</div>
+  </div>
+  <div class="topbar-right">
+    <span class="last-update" id="lastUpdate">—</span>
+    <div class="live-pill"><div class="pulse" id="liveDot"></div><span id="liveLabel">LIVE</span></div>
+  </div>
+</div>
+
+<!-- DATE FILTER BAR -->
+<div class="filterbar">
+  <button class="period-btn on" onclick="setPeriod('today',this)">Today</button>
+  <button class="period-btn" onclick="setPeriod('week',this)">This Week</button>
+  <button class="period-btn" onclick="setPeriod('month',this)">This Month</button>
+  <button class="period-btn" onclick="setPeriod('all',this)">All Time</button>
+  <div class="divider"></div>
+  <div class="date-input-wrap">
+    <span class="date-label">Pick a date:</span>
+    <input type="date" class="date-input" id="datePicker" onchange="setDatePicker(this.value)">
+  </div>
+  <span class="period-label" id="periodLabel">Showing today's sales</span>
+</div>
+
+<!-- BODY -->
+<div class="body">
+  <div class="left">
+    <div class="metrics" id="metrics"></div>
+    <div class="lb">
+      <div class="lb-head">
+        🏆 Agent Leaderboard
+        <span class="lb-period" id="lbPeriod">TODAY</span>
+      </div>
+      <div class="lb-list" id="lbList"></div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="feed-top">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="feed-title">📋 Policy Feed</span>
+        <span class="feed-period" id="feedPeriod">Today</span>
+      </div>
+      <div class="status-filters">
+        <button class="sf on" onclick="setStatus('all',this)">All</button>
+        <button class="sf" onclick="setStatus('active',this)">Active</button>
+        <button class="sf" onclick="setStatus('pending',this)">Pending</button>
+        <button class="sf" onclick="setStatus('lapsed',this)">Lapsed</button>
+      </div>
+    </div>
+    <div class="col-heads">
+      <span>Agent</span><span>Sold Date</span><span>Policy #</span><span>Status</span><span>Eff. Date</span><span>Carrier</span><span>Product</span><span>Annual</span><span>Source</span>
+    </div>
+    <div class="feed-scroll" id="feedScroll"></div>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-tag" id="tickerTag">TODAY</div>
+  <div class="ticker-track"><div class="ticker-inner" id="tickerInner"><span style="color:var(--text3)">Loading… &nbsp;&nbsp; Loading…</span></div></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-icon">🎉</div>
+  <div><div class="toast-title" id="toastTitle">New policy!</div><div class="toast-body" id="toastBody">—</div></div>
+</div>
+
+<script>
+const SHEET_ID='1xbKN-MqdZkTCVC-htkyVg28JWRcnR4kdBV_BU28l80k';
+const SHEET_NAME='Sold%20Policies%20w%20Policy%20%23%204%2F16%2B';
+const POLL_MS=15000;
+const COL={soldDate:0,agent:1,policy:2,status:3,carrier:9,product:10,effDate:11,monthly:12,annual:13,source:17};
+const AV=[['rgba(0,229,160,0.15)','#00e5a0'],['rgba(77,166,255,0.15)','#4da6ff'],['rgba(255,179,64,0.15)','#ffb340'],['rgba(155,127,255,0.15)','#9b7fff'],['rgba(255,95,95,0.15)','#ff5f5f'],['rgba(52,211,153,0.15)','#34d399'],['rgba(251,191,36,0.15)','#fbbf24'],['rgba(167,139,250,0.15)','#a78bfa']];
+function av(n){return AV[Math.abs((n||'').charCodeAt(0)+(n||'').charCodeAt((n||'').length-1))%AV.length]}
+function initials(n){return(n||'?').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase()}
+function fmtAnnual(v){const n=Number(v)||0;return n?'$'+n.toLocaleString():'—'}
+function statusClass(s){const sl=(s||'').toLowerCase();if(sl.includes('active'))return'p-active';if(sl.includes('pend'))return'p-pending';if(sl.includes('laps')||sl.includes('cancel'))return'p-lapsed';return'p-other'}
+function parseSheetDate(v){if(!v)return null;const m=String(v).match(/Date\((\d+),(\d+),(\d+)\)/);if(m)return new Date(+m[1],+m[2],+m[3]);return null}
+function toYMD(d){if(!d)return'';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function fmtDisplay(d){if(!d)return'—';return d.toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'})}
+
+let allRows=[];
+let prevCount=0;
+let activePeriod='today';
+let activeStatus='all';
+let pickedDate=null;
+let initialized=false;
+let toastTimer=null;
+
+async function fetchSheet(){
+  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}&t=${Date.now()}`;
+  try{
+    const res=await fetch(url);
+    const text=await res.text();
+    const json=JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
+    const rows=json.table.rows||[];
+    return rows.map(r=>({
+      soldDate: parseSheetDate(r.c[COL.soldDate]?.v),
+      soldDateStr: toYMD(parseSheetDate(r.c[COL.soldDate]?.v)),
+      agent: r.c[COL.agent]?.v||'Unknown',
+      policy: r.c[COL.policy]?.v||'—',
+      status: r.c[COL.status]?.v||'—',
+      carrier: r.c[COL.carrier]?.v||'—',
+      product: r.c[COL.product]?.v||'—',
+      effDate: parseSheetDate(r.c[COL.effDate]?.v),
+      monthly: Number(r.c[COL.monthly]?.v)||0,
+      annual: Number(r.c[COL.annual]?.v)||0,
+      source: r.c[COL.source]?.v||'—',
+    })).filter(r=>r.agent&&r.agent!=='Agent Name'&&r.annual>0);
+  }catch(e){console.error('Fetch error:',e);return null;}
+}
+
+async function poll(){
+  const rows=await fetchSheet();
+  if(rows===null){
+    document.getElementById('liveDot').style.background='var(--amber)';
+    document.getElementById('liveLabel').textContent='RECONNECTING';
+    return;
+  }
+  document.getElementById('liveDot').style.background='var(--green)';
+  document.getElementById('liveLabel').textContent='LIVE';
+  document.getElementById('lastUpdate').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  if(initialized&&rows.length>prevCount){
+    const newest=rows[rows.length-1];
+    showToast(newest);
+  }
+  allRows=[...rows].reverse();
+  prevCount=rows.length;
+  if(!initialized){document.getElementById('loading').classList.add('hide');initialized=true;}
+  render();
+  updateTicker();
+}
+
+// ── FILTERING ──────────────────────────────────────────────────────────────
+function getToday(){return toYMD(new Date())}
+function getWeekStart(){const d=new Date();d.setDate(d.getDate()-d.getDay());return toYMD(d)}
+function getMonthStart(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'}
+
+function filterByPeriod(rows){
+  const today=getToday();
+  if(activePeriod==='today')return rows.filter(r=>r.soldDateStr===today);
+  if(activePeriod==='week')return rows.filter(r=>r.soldDateStr>=getWeekStart());
+  if(activePeriod==='month')return rows.filter(r=>r.soldDateStr>=getMonthStart());
+  if(activePeriod==='date'&&pickedDate)return rows.filter(r=>r.soldDateStr===pickedDate);
+  return rows;
+}
+
+function filterByStatus(rows){
+  if(activeStatus==='all')return rows;
+  return rows.filter(r=>(r.status||'').toLowerCase().includes(activeStatus));
+}
+
+function getPeriodLabel(){
+  if(activePeriod==='today')return"Today's sales";
+  if(activePeriod==='week')return'This week';
+  if(activePeriod==='month')return'This month';
+  if(activePeriod==='all')return'All time';
+  if(activePeriod==='date'&&pickedDate){
+    const d=new Date(pickedDate+'T00:00:00');
+    return d.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  }
+  return'';
+}
+
+function setPeriod(p,btn){
+  activePeriod=p;
+  pickedDate=null;
+  document.getElementById('datePicker').value='';
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  render();
+}
+
+function setDatePicker(val){
+  if(!val)return;
+  pickedDate=val;
+  activePeriod='date';
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('on'));
+  render();
+}
+
+function setStatus(s,btn){
+  activeStatus=s;
+  document.querySelectorAll('.sf').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  render();
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function render(){
+  const periodRows=filterByPeriod(allRows);
+  const label=getPeriodLabel();
+  document.getElementById('periodLabel').textContent='Showing: '+label;
+  document.getElementById('lbPeriod').textContent=label.toUpperCase();
+  document.getElementById('feedPeriod').textContent=label;
+  document.getElementById('tickerTag').textContent=activePeriod==='today'?'TODAY':label.toUpperCase().slice(0,12);
+  renderMetrics(periodRows);
+  renderLeaderboard(periodRows);
+  renderFeed(periodRows);
+}
+
+function renderMetrics(rows){
+  const totalAnnual=rows.reduce((s,r)=>s+r.annual,0);
+  const totalMonthly=rows.reduce((s,r)=>s+r.monthly,0);
+  const active=rows.filter(r=>(r.status||'').toLowerCase().includes('active')).length;
+  const agents=new Set(rows.map(r=>r.agent)).size;
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric m1"><div class="metric-label">Annual Premium</div><div class="metric-val">$${Math.round(totalAnnual).toLocaleString()}</div><div class="metric-sub">${rows.length} polic${rows.length===1?'y':'ies'}</div></div>
+    <div class="metric m2"><div class="metric-label">Active</div><div class="metric-val">${active}</div><div class="metric-sub">${rows.length?Math.round(active/rows.length*100):0}% of period</div></div>
+    <div class="metric m3"><div class="metric-label">Monthly Premium</div><div class="metric-val">$${Math.round(totalMonthly).toLocaleString()}</div><div class="metric-sub">across period</div></div>
+    <div class="metric m4"><div class="metric-label">Producers</div><div class="metric-val">${agents}</div><div class="metric-sub">in this period</div></div>`;
+}
+
+function renderLeaderboard(rows){
+  const m={};
+  rows.forEach(r=>{
+    if(!m[r.agent])m[r.agent]={name:r.agent,count:0,annual:0,active:0};
+    m[r.agent].count++;
+    m[r.agent].annual+=r.annual;
+    if((r.status||'').toLowerCase().includes('active'))m[r.agent].active++;
+  });
+  const agents=Object.values(m).sort((a,b)=>b.annual-a.annual);
+  if(!agents.length){document.getElementById('lbList').innerHTML='<div class="empty">No sales in this period</div>';return;}
+  const max=agents[0].annual||1;
+  const MEDALS=['🥇','🥈','🥉'];
+  document.getElementById('lbList').innerHTML=agents.map((a,i)=>{
+    const[abg,atc]=av(a.name);
+    const rc=i<3?'r'+(i+1):'';
+    return`<div class="lb-row ${rc}">
+      <div class="lb-rank ${i>=3?'other':''}">${i<3?MEDALS[i]:i+1}</div>
+      <div class="lb-av" style="background:${abg};color:${atc}">${initials(a.name)}</div>
+      <div class="lb-info"><div class="lb-name">${a.name}</div><div class="lb-meta">${a.count} polic${a.count===1?'y':'ies'} · ${a.active} active</div></div>
+      <div class="lb-amt"><div class="lb-premium">$${Math.round(a.annual).toLocaleString()}</div></div>
+      <div class="lb-bar-bg"><div class="lb-bar" style="width:${Math.round(a.annual/max*100)}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderFeed(periodRows){
+  const rows=filterByStatus(periodRows);
+  const el=document.getElementById('feedScroll');
+  if(!rows.length){el.innerHTML=`<div class="empty">${allRows.length?'No policies match this filter':'Waiting for data…'}</div>`;return;}
+
+  // Group by sold date
+  const grouped={};
+  rows.forEach(r=>{
+    const k=r.soldDateStr||'Unknown';
+    if(!grouped[k])grouped[k]=[];
+    grouped[k].push(r);
+  });
+  const sortedDates=Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
+
+  // If single day selected, don't show date groups
+  const showGroups=activePeriod!=='today'&&activePeriod!=='date';
+
+  let html='';
+  sortedDates.forEach(dateKey=>{
+    const dayRows=grouped[dateKey];
+    if(showGroups){
+      const d=new Date(dateKey+'T00:00:00');
+      const dayTotal=dayRows.reduce((s,r)=>s+r.annual,0);
+      html+=`<div class="date-group">
+        <span>${d.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</span>
+        <span class="date-group-count">${dayRows.length} polic${dayRows.length===1?'y':'ies'} · $${Math.round(dayTotal).toLocaleString()}</span>
+      </div>`;
+    }
+    dayRows.forEach((r,i)=>{
+      const[abg,atc]=av(r.agent);
+      const isNew=i===0&&initialized&&dateKey===toYMD(new Date());
+      html+=`<div class="prow ${isNew?'new':''}">
+        <div class="c-agent"><div class="c-av" style="background:${abg};color:${atc}">${initials(r.agent)}</div><span class="c-name">${r.agent}</span></div>
+        <div class="c-date">${r.soldDate?r.soldDate.toLocaleDateString([],{month:'short',day:'numeric'}):'—'}</div>
+        <div class="c-policy">${r.policy}</div>
+        <div><span class="pill ${statusClass(r.status)}"><span class="pill-dot"></span>${r.status}</span></div>
+        <div class="c-date">${r.effDate?r.effDate.toLocaleDateString([],{month:'short',day:'numeric'}):'—'}</div>
+        <div class="c-carrier">${r.carrier}</div>
+        <div class="c-product">${r.product}</div>
+        <div class="c-annual">${fmtAnnual(r.annual)}</div>
+        <div class="c-source">${r.source}</div>
+      </div>`;
+    });
+  });
+  el.innerHTML=html;
+}
+
+function updateTicker(){
+  const rows=filterByPeriod(allRows).slice(0,20);
+  if(!rows.length)return;
+  const html=rows.map(r=>`<span class="ti"><span style="color:var(--green);font-weight:600">${r.agent}</span><span style="color:var(--text2)">$${Math.round(r.annual).toLocaleString()}</span><span style="color:var(--text3)">·</span><span style="color:var(--text3)">${r.carrier}</span><span style="color:var(--text3);margin:0 6px">|</span></span>`).join('');
+  document.getElementById('tickerInner').innerHTML=html+html;
+}
+
+function showToast(r){
+  clearTimeout(toastTimer);
+  document.getElementById('toastTitle').textContent='New sale — '+r.agent+'!';
+  document.getElementById('toastBody').textContent=fmtAnnual(r.annual)+'/yr · '+r.carrier+' · '+r.status;
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  toastTimer=setTimeout(()=>t.classList.remove('show'),4500);
+}
+
+function tickClock(){
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('clockDate').textContent=n.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});
+}
+
+// Set today's date as default in date picker
+document.getElementById('datePicker').value=toYMD(new Date());
+
+tickClock();
+setInterval(tickClock,1000);
+poll();
+setInterval(poll,POLL_MS);
+</script>
+</body>
+</html>
